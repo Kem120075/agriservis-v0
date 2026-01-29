@@ -43,9 +43,9 @@ export default function HomePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#8a5a3b" }}>
                 <UserPlus className="h-6 w-6" />
-                Register
+                Sign Up
               </CardTitle>
-              <CardDescription className="text-base">Create new farmer account</CardDescription>
+              <CardDescription className="text-base">Create a new account</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -54,7 +54,7 @@ export default function HomePage() {
                 style={{ backgroundColor: "#f3c84b" }}
                 size="lg"
               >
-                <Link href="/register">Create Account</Link>
+                <Link href="/select-role">Create Account</Link>
               </Button>
             </CardContent>
           </Card>
