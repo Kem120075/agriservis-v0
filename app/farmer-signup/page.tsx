@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,8 +11,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { LanguageToggle } from "@/components/language-toggle"
 import { VoicePromptButton } from "@/components/voice-prompt-button"
-import { User, Mail, Phone, MapPin, Leaf, Lock, Eye, EyeOff, Home, CheckCircle } from "lucide-react"
+import { User, Mail, Phone, MapPin, Leaf, Lock, Eye, EyeOff, Home, CheckCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 
 const pngProvinces = [
   "Bougainville",
@@ -46,9 +48,12 @@ const farmingCategories = [
 ]
 
 export default function FarmerSignupPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isRegistered, setIsRegistered] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -61,9 +66,65 @@ export default function FarmerSignupPage() {
     confirmPassword: "",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsRegistered(true)
+    setError(null)
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+
+    // Validate password length
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters")
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const supabase = createClient()
+
+      // Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo:
+            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+            `${window.location.origin}/verify-identity`,
+          data: {
+            full_name: formData.fullName,
+            phone: formData.phone,
+            province: formData.province,
+            district: formData.district,
+            village: formData.village,
+            farming_category: formData.farmingCategory,
+            role: "farmer",
+          },
+        },
+      })
+
+      if (authError) {
+        setError(authError.message)
+        setIsLoading(false)
+        return
+      }
+
+      if (authData.user) {
+        setIsRegistered(true)
+        // Redirect to verify-identity after short delay
+        setTimeout(() => {
+          router.push("/verify-identity")
+        }, 2000)
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (isRegistered) {
@@ -421,15 +482,32 @@ export default function FarmerSignupPage() {
                 <p className="text-xs text-gray-500">Re-enter your password to confirm</p>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+              )}
+
               {/* Submit Button */}
               <Button
                 type="submit"
                 className="w-full h-14 text-lg font-semibold text-black hover:opacity-90 mt-6"
                 style={{ backgroundColor: "#f3c84b" }}
                 size="lg"
+                disabled={isLoading}
               >
-                <Leaf className="mr-2 h-5 w-5" />
-                Create Farmer Account
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    <Leaf className="mr-2 h-5 w-5" />
+                    Create Farmer Account
+                  </>
+                )}
               </Button>
             </form>
 
