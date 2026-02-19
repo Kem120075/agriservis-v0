@@ -114,32 +114,6 @@ export default function FarmerSignupPage() {
       }
 
       if (authData.user) {
-        // Insert into user_roles table
-        const { error: roleError } = await supabase.from("user_roles").insert({
-          user_id: authData.user.id,
-          role: "farmer",
-        })
-
-        if (roleError && !roleError.message.includes("duplicate")) {
-          console.log("[v0] Role insert error (may be handled by trigger):", roleError.message)
-        }
-
-        // Insert into farmers table
-        const { error: farmerError } = await supabase.from("farmers").insert({
-          user_id: authData.user.id,
-          full_name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          province: formData.province,
-          district: formData.district,
-          village: formData.village,
-          farming_category: formData.farmingCategory,
-        })
-
-        if (farmerError && !farmerError.message.includes("duplicate")) {
-          console.log("[v0] Farmer insert error (may be handled by trigger):", farmerError.message)
-        }
-
         setIsRegistered(true)
         // Redirect to verify-identity after short delay
         setTimeout(() => {

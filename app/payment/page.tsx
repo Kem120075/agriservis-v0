@@ -7,7 +7,13 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { LanguageToggle } from "@/components/language-toggle"
 import { VoicePromptButton } from "@/components/voice-prompt-button"
-import { CheckCircle2, Wallet, Smartphone, Building2, DollarSign } from "lucide-react"
+import {
+  CheckCircle2,
+  Wallet,
+  Smartphone,
+  Building2,
+  DollarSign,
+} from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
